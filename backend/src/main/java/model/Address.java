@@ -2,6 +2,7 @@ package model;
 
 public class Address {
 
+    private long contactId;
     private String country;
     private String city;
     private String street;
@@ -11,6 +12,14 @@ public class Address {
 
     public Address(){
 
+    }
+
+    public long getContactId() {
+        return contactId;
+    }
+
+    public void setContactId(long contactId) {
+        this.contactId = contactId;
     }
 
     public String getCountry() {

@@ -1,7 +1,6 @@
 package model;
 
 import java.util.Date;
-import java.util.List;
 
 public class Contact {
 
@@ -16,10 +15,7 @@ public class Contact {
     private String website;
     private String email;
     private String currentPlaceOfWork;
-    private Address address;
     private String photo;
-    private List<PhoneNumber> phoneNumbers;
-    private List<Attachment> attachments;
 
 
     public Contact(){
@@ -114,14 +110,6 @@ public class Contact {
         this.currentPlaceOfWork = currentPlaceOfWork;
     }
 
-    public Address getAddress() {
-        return address;
-    }
-
-    public void setAddress(Address address) {
-        this.address = address;
-    }
-
     public String getPhoto() {
         return photo;
     }
@@ -130,19 +118,4 @@ public class Contact {
         this.photo = photo;
     }
 
-    public List<PhoneNumber> getPhoneNumbers() {
-        return phoneNumbers;
-    }
-
-    public void setPhoneNumbers(List<PhoneNumber> phoneNumbers) {
-        this.phoneNumbers = phoneNumbers;
-    }
-
-    public List<Attachment> getAttachments() {
-        return attachments;
-    }
-
-    public void setAttachments(List<Attachment> attachments) {
-        this.attachments = attachments;
-    }
 }

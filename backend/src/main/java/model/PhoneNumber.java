@@ -3,6 +3,7 @@ package model;
 
 public class PhoneNumber {
 
+    private long contactId;
     private int countryCode;
     private int operatorCode;
     private long phoneNumber;
@@ -10,6 +11,14 @@ public class PhoneNumber {
     private String comment;
 
     public PhoneNumber() {
+    }
+
+    public long getContactId() {
+        return contactId;
+    }
+
+    public void setContactId(long contactId) {
+        this.contactId = contactId;
     }
 
     public int getCountryCode() {

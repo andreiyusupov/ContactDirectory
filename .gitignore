@@ -1,2 +1,4 @@
 /.idea/
 /ContactDirectory.iml
+/web/target/
+/core/target/

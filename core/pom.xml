@@ -9,7 +9,14 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>frontend</artifactId>
+    <artifactId>core</artifactId>
+<dependencies>
+    <dependency>
+        <groupId>org.postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>42.2.13.jre7</version>
+    </dependency>
+</dependencies>
 
 
 </project>

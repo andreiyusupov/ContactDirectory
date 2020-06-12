@@ -1,4 +1,4 @@
-package model;
+package com.nevermind.model;
 
 import java.util.Date;
 

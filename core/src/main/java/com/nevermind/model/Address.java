@@ -1,4 +1,4 @@
-package model;
+package com.nevermind.model;
 
 public class Address {
 

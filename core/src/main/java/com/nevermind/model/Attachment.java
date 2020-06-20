@@ -1,12 +1,12 @@
 package com.nevermind.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class Attachment {
 
     private long contactId;
     private String fileName;
-    private Date date;
+    private LocalDate date;
     private String comment;
 
     public Attachment() {
@@ -28,11 +28,11 @@ public class Attachment {
         this.fileName = fileName;
     }
 
-    public Date getDate() {
+    public LocalDate getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(LocalDate date) {
         this.date = date;
     }
 

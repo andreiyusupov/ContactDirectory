@@ -1,6 +1,6 @@
 package com.nevermind.model;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 public class Contact {
 
@@ -8,7 +8,7 @@ public class Contact {
     private String firstName;
     private String middleName;
     private String lastName;
-    private Date dateOfBirth;
+    private LocalDate dateOfBirth;
     private Gender gender;
     private String citizenship;
     private MaritalStatus maritalStatus;
@@ -54,11 +54,11 @@ public class Contact {
         this.lastName = lastName;
     }
 
-    public Date getDateOfBirth() {
+    public LocalDate getDateOfBirth() {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(Date dateOfBirth) {
+    public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
     }
 

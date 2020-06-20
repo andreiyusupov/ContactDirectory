@@ -23,14 +23,15 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
                 "VALUES(?,?,?,?,?,?);";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
             preparedStatement.setLong(1, phoneNumber.getContactId());
             preparedStatement.setInt(2, phoneNumber.getCountryCode());
             preparedStatement.setInt(3, phoneNumber.getOperatorCode());
             preparedStatement.setLong(4, phoneNumber.getPhoneNumber());
             preparedStatement.setObject(5, phoneNumber.getPhoneType().toString(), Types.OTHER);
             preparedStatement.setString(6, phoneNumber.getComment());
-            int rowsInserted = preparedStatement.executeUpdate();
-            return rowsInserted == 1;
+
+            return preparedStatement.executeUpdate() == 1;
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
@@ -39,14 +40,16 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
     }
 
     @Override
-    public PhoneNumber get(int id) {
+    public PhoneNumber get(long id) {
         String sql = "SELECT contact_id, country_code, operator_code, phone_number, phone_type, comment" +
                 " FROM " + tableName +
-                " WHERE contact_id=" + id + ";";
+                " WHERE contact_id=?;";
         try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
-            return resultSet.next() ? parsePhoneNumber(resultSet) : null;
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setLong(1, id);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() ? parsePhoneNumber(resultSet) : null;
+            }
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
@@ -54,23 +57,24 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
     }
 
     @Override
-    public List<PhoneNumber> getAllById(int id) {
+    public List<PhoneNumber> getAllById(long id) {
         List<PhoneNumber> phoneNumbers = new ArrayList<>();
         String sql = "SELECT contact_id, country_code, operator_code, phone_number, phone_type, comment" +
                 " FROM " + tableName +
-                " WHERE contact_id=" + id + ";";
+                " WHERE contact_id=?;";
         try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
-            while (resultSet.next()) {
-                phoneNumbers.add(
-                        parsePhoneNumber(resultSet));
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setLong(1, id);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    phoneNumbers.add(
+                            parsePhoneNumber(resultSet));
+                }
             }
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
         return phoneNumbers;
-
     }
 
     @Override
@@ -81,23 +85,23 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
     @Override
     public boolean update(PhoneNumber phoneNumber) {
 
-        String sql = "UPDATE " + tableName + " SET(country_code, operator_code, phone_number, phone_type, comment) =" +
-                "(?,?,?,?,?)" +
+        String sql = "UPDATE " + tableName +
+                " SET(country_code, operator_code, phone_number, phone_type, comment) =(?,?,?,?,?)" +
                 " WHERE contact_id=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
             preparedStatement.setInt(1, phoneNumber.getCountryCode());
             preparedStatement.setInt(2, phoneNumber.getOperatorCode());
             preparedStatement.setLong(3, phoneNumber.getPhoneNumber());
             preparedStatement.setObject(4, phoneNumber.getPhoneType().toString(), Types.OTHER);
             preparedStatement.setString(5, phoneNumber.getComment());
             preparedStatement.setLong(6, phoneNumber.getContactId());
-            int rowsUpdated = preparedStatement.executeUpdate();
-            return rowsUpdated == 1;
+
+            return preparedStatement.executeUpdate() == 1;
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
-
         return false;
     }
 
@@ -106,18 +110,18 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
         String sql = "DELETE FROM " + tableName +
                 " WHERE (contact_id,country_code,operator_code,phone_number,phone_type) = (?,?,?,?,?);";
         try (Connection connection = dataSource.getConnection();
+
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setLong(1, phoneNumber.getContactId());
             preparedStatement.setInt(2, phoneNumber.getCountryCode());
             preparedStatement.setInt(3, phoneNumber.getOperatorCode());
             preparedStatement.setLong(4, phoneNumber.getPhoneNumber());
             preparedStatement.setObject(5, phoneNumber.getPhoneType().toString(), Types.OTHER);
-            int rowsDeleted = preparedStatement.executeUpdate();
-            return rowsDeleted == 1;
+
+            return preparedStatement.executeUpdate() == 1;
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
-
         return false;
     }
 

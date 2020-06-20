@@ -6,9 +6,9 @@ public interface DAO<T> {
 
     boolean create(T t);
 
-    T get(int id);
+    T get(long id);
 
-    List<T> getAllById(int id);
+    List<T> getAllById(long id);
 
     List<T> getAll();
 

@@ -19,9 +19,10 @@ public class AddressDAO implements DAO<Address> {
     }
 
     @Override
-    public boolean create(Address address) {
-        String sql = "INSERT INTO " + tableName + "(contact_id, country, city, street, house_number, appartment_number, postcode) " +
-                "VALUES(?,?,?,?,?,?,?);";
+    public long create(Address address) {
+        String sql = "INSERT INTO " + tableName + "(contact_id, country, city, street, house_number, appartment_number, postcode)" +
+                " VALUES(?,?,?,?,?,?,?)" +
+                " RETURNING id;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
@@ -32,20 +33,22 @@ public class AddressDAO implements DAO<Address> {
             preparedStatement.setInt(5, address.getHouseNumber());
             preparedStatement.setInt(6, address.getApartmentNumber());
             preparedStatement.setInt(7, address.getPostcode());
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.getLong(1);
+            }
 
-            return preparedStatement.executeUpdate() == 1;
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
 
-        return false;
+        return -1;
     }
 
     @Override
     public Address get(long id) {
-        String sql = "SELECT contact_id, country, city, street, house_number, appartment_number, postcode" +
+        String sql = "SELECT id, contact_id, country, city, street, house_number, appartment_number, postcode" +
                 " FROM " + tableName +
-                " WHERE contact_id=?;";
+                " WHERE id=?;";
 
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -73,18 +76,19 @@ public class AddressDAO implements DAO<Address> {
     public boolean update(Address address) {
 
         String sql = "UPDATE " + tableName +
-                " SET(country, city, street, house_number, appartment_number, postcode) =(?,?,?,?,?,?)" +
-                " WHERE contact_id=?;";
+                " SET(contact_id, country, city, street, house_number, appartment_number, postcode) =(?,?,?,?,?,?,?)" +
+                " WHERE id=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            preparedStatement.setString(1, address.getCountry());
-            preparedStatement.setString(2, address.getCity());
-            preparedStatement.setString(3, address.getStreet());
-            preparedStatement.setInt(4, address.getHouseNumber());
-            preparedStatement.setInt(5, address.getApartmentNumber());
-            preparedStatement.setInt(6, address.getPostcode());
-            preparedStatement.setLong(7, address.getContactId());
+            preparedStatement.setLong(1, address.getContactId());
+            preparedStatement.setString(2, address.getCountry());
+            preparedStatement.setString(3, address.getCity());
+            preparedStatement.setString(4, address.getStreet());
+            preparedStatement.setInt(5, address.getHouseNumber());
+            preparedStatement.setInt(6, address.getApartmentNumber());
+            preparedStatement.setInt(7, address.getPostcode());
+            preparedStatement.setLong(8, address.getId());
 
             return preparedStatement.executeUpdate() == 1;
         } catch (SQLException sqle) {
@@ -101,20 +105,22 @@ public class AddressDAO implements DAO<Address> {
 
     private Address parseAddress(ResultSet resultSet) throws SQLException {
         Address address = new Address();
+        address.setId(
+                resultSet.getLong(1));
         address.setContactId(
-                resultSet.getInt(1));
+                resultSet.getLong(2));
         address.setCountry(
-                resultSet.getString(2));
-        address.setCity(
                 resultSet.getString(3));
-        address.setStreet(
+        address.setCity(
                 resultSet.getString(4));
+        address.setStreet(
+                resultSet.getString(5));
         address.setHouseNumber(
-                resultSet.getInt(5));
-        address.setApartmentNumber(
                 resultSet.getInt(6));
-        address.setPostcode(
+        address.setApartmentNumber(
                 resultSet.getInt(7));
+        address.setPostcode(
+                resultSet.getInt(8));
         return address;
     }
 }

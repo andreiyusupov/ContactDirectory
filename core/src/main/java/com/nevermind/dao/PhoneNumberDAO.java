@@ -18,9 +18,10 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
     }
 
     @Override
-    public boolean create(PhoneNumber phoneNumber) {
-        String sql = "INSERT INTO " + tableName + "(contact_id, country_code, operator_code, phone_number, phone_type, comment) " +
-                "VALUES(?,?,?,?,?,?);";
+    public long create(PhoneNumber phoneNumber) {
+        String sql = "INSERT INTO " + tableName + "(contact_id, country_code, operator_code, phone_number, phone_type, comment)" +
+                " VALUES(?,?,?,?,?,?)" +
+                " RETURNING id;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
@@ -31,19 +32,21 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
             preparedStatement.setObject(5, phoneNumber.getPhoneType().toString(), Types.OTHER);
             preparedStatement.setString(6, phoneNumber.getComment());
 
-            return preparedStatement.executeUpdate() == 1;
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.getLong(1);
+            }
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
 
-        return false;
+        return -1;
     }
 
     @Override
     public PhoneNumber get(long id) {
-        String sql = "SELECT contact_id, country_code, operator_code, phone_number, phone_type, comment" +
+        String sql = "SELECT id, contact_id, country_code, operator_code, phone_number, phone_type, comment" +
                 " FROM " + tableName +
-                " WHERE contact_id=?;";
+                " WHERE id=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setLong(1, id);
@@ -59,9 +62,9 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
     @Override
     public List<PhoneNumber> getAllById(long id) {
         List<PhoneNumber> phoneNumbers = new ArrayList<>();
-        String sql = "SELECT contact_id, country_code, operator_code, phone_number, phone_type, comment" +
+        String sql = "SELECT id, contact_id, country_code, operator_code, phone_number, phone_type, comment" +
                 " FROM " + tableName +
-                " WHERE contact_id=?;";
+                " WHERE id=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setLong(1, id);
@@ -84,19 +87,19 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
 
     @Override
     public boolean update(PhoneNumber phoneNumber) {
-
         String sql = "UPDATE " + tableName +
-                " SET(country_code, operator_code, phone_number, phone_type, comment) =(?,?,?,?,?)" +
-                " WHERE contact_id=?;";
+                " SET(contact_id, country_code, operator_code, phone_number, phone_type, comment) =(?,?,?,?,?,?)" +
+                " WHERE id=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            preparedStatement.setInt(1, phoneNumber.getCountryCode());
-            preparedStatement.setInt(2, phoneNumber.getOperatorCode());
-            preparedStatement.setLong(3, phoneNumber.getPhoneNumber());
-            preparedStatement.setObject(4, phoneNumber.getPhoneType().toString(), Types.OTHER);
-            preparedStatement.setString(5, phoneNumber.getComment());
-            preparedStatement.setLong(6, phoneNumber.getContactId());
+            preparedStatement.setLong(1, phoneNumber.getContactId());
+            preparedStatement.setInt(2, phoneNumber.getCountryCode());
+            preparedStatement.setInt(3, phoneNumber.getOperatorCode());
+            preparedStatement.setLong(4, phoneNumber.getPhoneNumber());
+            preparedStatement.setObject(5, phoneNumber.getPhoneType().toString(), Types.OTHER);
+            preparedStatement.setString(6, phoneNumber.getComment());
+            preparedStatement.setLong(7, phoneNumber.getId());
 
             return preparedStatement.executeUpdate() == 1;
         } catch (SQLException sqle) {
@@ -108,15 +111,11 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
     @Override
     public boolean delete(PhoneNumber phoneNumber) {
         String sql = "DELETE FROM " + tableName +
-                " WHERE (contact_id,country_code,operator_code,phone_number,phone_type) = (?,?,?,?,?);";
+                " WHERE id=?;";
         try (Connection connection = dataSource.getConnection();
 
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setLong(1, phoneNumber.getContactId());
-            preparedStatement.setInt(2, phoneNumber.getCountryCode());
-            preparedStatement.setInt(3, phoneNumber.getOperatorCode());
-            preparedStatement.setLong(4, phoneNumber.getPhoneNumber());
-            preparedStatement.setObject(5, phoneNumber.getPhoneType().toString(), Types.OTHER);
+            preparedStatement.setLong(1, phoneNumber.getId());
 
             return preparedStatement.executeUpdate() == 1;
         } catch (SQLException sqle) {
@@ -127,18 +126,20 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
 
     private PhoneNumber parsePhoneNumber(ResultSet resultSet) throws SQLException {
         PhoneNumber phoneNumber = new PhoneNumber();
+        phoneNumber.setId(
+                resultSet.getLong(1));
         phoneNumber.setContactId(
-                resultSet.getInt(1));
+                resultSet.getLong(2));
         phoneNumber.setCountryCode(
-                resultSet.getInt(2));
-        phoneNumber.setOperatorCode(
                 resultSet.getInt(3));
-        phoneNumber.setPhoneNumber(
+        phoneNumber.setOperatorCode(
                 resultSet.getInt(4));
+        phoneNumber.setPhoneNumber(
+                resultSet.getInt(5));
         phoneNumber.setPhoneType(
-                PhoneType.valueOf(resultSet.getString(5)));
+                PhoneType.valueOf(resultSet.getString(6)));
         phoneNumber.setComment(
-                resultSet.getString(6));
+                resultSet.getString(7));
         return phoneNumber;
     }
 }

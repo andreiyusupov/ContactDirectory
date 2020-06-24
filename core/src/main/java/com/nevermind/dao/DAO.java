@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface DAO<T> {
 
-    boolean create(T t);
+    long create(T t);
 
     T get(long id);
 

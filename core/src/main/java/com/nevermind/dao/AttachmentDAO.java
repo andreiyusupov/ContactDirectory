@@ -17,9 +17,10 @@ public class AttachmentDAO implements DAO<Attachment> {
     }
 
     @Override
-    public boolean create(Attachment attachment) {
-        String sql = "INSERT INTO " + tableName + "(contact_id, filename, date, comment) " +
-                "VALUES(?,?,?,?);";
+    public long create(Attachment attachment) {
+        String sql = "INSERT INTO " + tableName + "(contact_id, filename, date, comment)" +
+                " VALUES(?,?,?,?)" +
+                " RETURNING id;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
@@ -28,19 +29,21 @@ public class AttachmentDAO implements DAO<Attachment> {
             preparedStatement.setDate(3, Date.valueOf(attachment.getDate()));
             preparedStatement.setString(4, attachment.getComment());
 
-            return preparedStatement.executeUpdate() == 1;
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.getLong(1);
+            }
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
 
-        return false;
+        return -1;
     }
 
     @Override
     public Attachment get(long id) {
-        String sql = "SELECT contact_id, filename, date, comment" +
+        String sql = "SELECT id, contact_id, filename, date, comment" +
                 " FROM " + tableName +
-                " WHERE contact_id=?;";
+                " WHERE id=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setLong(1, id);
@@ -56,9 +59,9 @@ public class AttachmentDAO implements DAO<Attachment> {
     @Override
     public List<Attachment> getAllById(long id) {
         List<Attachment> attachments = new ArrayList<>();
-        String sql = "SELECT contact_id, filename, date, comment" +
+        String sql = "SELECT id, contact_id, filename, date, comment" +
                 " FROM " + tableName +
-                " WHERE contact_id=?;";
+                " WHERE id=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setLong(1, id);
@@ -83,15 +86,16 @@ public class AttachmentDAO implements DAO<Attachment> {
     public boolean update(Attachment attachment) {
 
         String sql = "UPDATE " + tableName +
-                " SET(filename, date, comment) = (?,?,?)" +
-                " WHERE contact_id=?;";
+                " SET(contact_id, filename, date, comment) = (?,?,?,?)" +
+                " WHERE id=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            preparedStatement.setString(1, attachment.getFileName());
-            preparedStatement.setDate(2, Date.valueOf(attachment.getDate()));
-            preparedStatement.setString(3, attachment.getComment());
-            preparedStatement.setLong(4, attachment.getContactId());
+            preparedStatement.setLong(1, attachment.getContactId());
+            preparedStatement.setString(2, attachment.getFileName());
+            preparedStatement.setDate(3, Date.valueOf(attachment.getDate()));
+            preparedStatement.setString(4, attachment.getComment());
+            preparedStatement.setLong(5, attachment.getId());
 
             return preparedStatement.executeUpdate() == 1;
         } catch (SQLException sqle) {
@@ -104,12 +108,11 @@ public class AttachmentDAO implements DAO<Attachment> {
     @Override
     public boolean delete(Attachment attachment) {
         String sql = "DELETE FROM " + tableName +
-                " WHERE (contact_id,filename)=(?,?);";
+                " WHERE id=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-            preparedStatement.setLong(1, attachment.getContactId());
-            preparedStatement.setString(2, attachment.getFileName());
+            preparedStatement.setLong(1, attachment.getId());
 
             return preparedStatement.executeUpdate() == 1;
         } catch (SQLException sqle) {
@@ -121,14 +124,16 @@ public class AttachmentDAO implements DAO<Attachment> {
 
     private Attachment parseAttachment(ResultSet resultSet) throws SQLException {
         Attachment attachment = new Attachment();
+        attachment.setId(
+                resultSet.getLong(1));
         attachment.setContactId(
-                resultSet.getInt(1));
+                resultSet.getLong(2));
         attachment.setFileName(
-                resultSet.getString(2));
+                resultSet.getString(3));
         attachment.setDate(
-                resultSet.getDate(3).toLocalDate());
+                resultSet.getDate(4).toLocalDate());
         attachment.setComment(
-                resultSet.getString(4));
+                resultSet.getString(5));
         return attachment;
     }
 }

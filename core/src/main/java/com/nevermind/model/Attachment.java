@@ -4,12 +4,21 @@ import java.time.LocalDate;
 
 public class Attachment {
 
+    private long id;
     private long contactId;
     private String fileName;
     private LocalDate date;
     private String comment;
 
     public Attachment() {
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public long getContactId() {

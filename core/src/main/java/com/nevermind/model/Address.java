@@ -2,6 +2,7 @@ package com.nevermind.model;
 
 public class Address {
 
+    private long id;
     private long contactId;
     private String country;
     private String city;
@@ -10,8 +11,17 @@ public class Address {
     private int apartmentNumber;
     private int postcode;
 
-    public Address(){
+    public Address() {
 
+    }
+
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public long getContactId() {

@@ -3,6 +3,7 @@ package com.nevermind.model;
 
 public class PhoneNumber {
 
+    private long id;
     private long contactId;
     private int countryCode;
     private int operatorCode;
@@ -11,6 +12,14 @@ public class PhoneNumber {
     private String comment;
 
     public PhoneNumber() {
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public long getContactId() {

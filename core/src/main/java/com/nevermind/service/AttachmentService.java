@@ -1,78 +1,42 @@
 package com.nevermind.service;
 
-import com.nevermind.dao.AttachmentDAO;
+import com.nevermind.dao.CoreDAO;
+import com.nevermind.dao.ManySlavesDAO;
 import com.nevermind.model.Attachment;
 
-import javax.json.*;
-import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.List;
 
-public class AttachmentService implements Service<JsonStructure> {
+public class AttachmentService implements ManySlavesService<Attachment> {
 
-    private final AttachmentDAO attachmentDAO;
+    private final CoreDAO<Attachment> attachmentDAO;
 
-    public AttachmentService(AttachmentDAO attachmentDAO) {
+    public AttachmentService(CoreDAO<Attachment> attachmentDAO) {
         this.attachmentDAO = attachmentDAO;
     }
 
-    public long create(JsonStructure attachmentInput) {
-        JsonObject jsonObject = attachmentInput.asJsonObject();
-        Attachment attachment = initAttachment(jsonObject);
+    @Override
+    public long create(Attachment attachment) {
         return attachmentDAO.create(attachment);
     }
 
     @Override
-    public JsonStructure get(long id) {
-        Attachment attachment = attachmentDAO.get(id);
-        return initAttachment(attachment).build();
+    public Attachment get(long id) {
+        return attachmentDAO.get(id);
     }
 
     @Override
-    public JsonStructure getAllById(long id) {
-        ArrayList<Attachment> attachmentList = (ArrayList<Attachment>) attachmentDAO.getAllById(id);
-        JsonArrayBuilder jsonArrayBuilder = Json.createArrayBuilder();
-        for (Attachment attachment : attachmentList) {
-            jsonArrayBuilder.add(initAttachment(attachment));
-        }
-        return jsonArrayBuilder.build();
+    public List<Attachment> getAllByMasterId(long id) {
+        return ((ManySlavesDAO<Attachment>) attachmentDAO).getAllByMasterId(id);
     }
 
     @Override
-    public JsonStructure getAll() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean update(JsonStructure attachmentInput) {
-        JsonObject jsonObject = attachmentInput.asJsonObject();
-        Attachment attachment = initAttachment(jsonObject);
+    public boolean update(Attachment attachment) {
         return attachmentDAO.update(attachment);
     }
 
     @Override
-    public boolean delete(JsonStructure attachmentInput) {
-        JsonObject jsonObject = attachmentInput.asJsonObject();
-        Attachment attachment = new Attachment();
-        attachment.setId(jsonObject.getJsonNumber("id").longValueExact());
-        return attachmentDAO.delete(attachment);
+    public boolean delete(long id) {
+        return attachmentDAO.delete(id);
     }
 
-    private JsonObjectBuilder initAttachment(Attachment attachment) {
-        return Json.createObjectBuilder()
-                .add("id", attachment.getId())
-                .add("contactId", attachment.getContactId())
-                .add("fileName", attachment.getFileName())
-                .add("date", attachment.getDate().toString())
-                .add("comment", attachment.getComment());
-    }
-
-    private Attachment initAttachment(JsonObject jsonObject) {
-        Attachment attachment = new Attachment();
-        attachment.setId(jsonObject.getJsonNumber("id").longValueExact());
-        attachment.setContactId(jsonObject.getJsonNumber("contactId").longValueExact());
-        attachment.setFileName(jsonObject.getString("fileName"));
-        attachment.setDate(LocalDate.parse(jsonObject.getString("date")));
-        attachment.setComment(jsonObject.getString("comment"));
-        return attachment;
-    }
 }

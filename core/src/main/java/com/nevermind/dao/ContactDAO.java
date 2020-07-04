@@ -9,10 +9,10 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContactDAO implements DAO<Contact> {
+public class ContactDAO implements PaginationDAO<Contact> {
 
     private final DataSource dataSource;
-    private final String tableName="contacts";
+    private final String tableName = "contacts";
 
     public ContactDAO(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -39,7 +39,7 @@ public class ContactDAO implements DAO<Contact> {
             preparedStatement.setString(10, contact.getCurrentPlaceOfWork());
             preparedStatement.setString(11, contact.getPhoto());
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                return resultSet.getLong(1);
+                return resultSet.next() ? resultSet.getLong(1) : -1;
             }
         } catch (SQLException sqle) {
             throw new RuntimeException(sqle);
@@ -62,30 +62,6 @@ public class ContactDAO implements DAO<Contact> {
             sqle.printStackTrace();
         }
         return null;
-    }
-
-    @Override
-    public List<Contact> getAllById(long id) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public List<Contact> getAll() {
-        List<Contact> contacts = new ArrayList<>();
-        String sql = "SELECT id,first_name,middle_name,last_name,date_of_birth,gender," +
-                "marital_status,citizenship,website,email,current_place_of_work,photo" +
-                " FROM " + tableName + ";";
-        try (Connection connection = dataSource.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
-            while (resultSet.next()) {
-                contacts.add(
-                        parseContact(resultSet));
-            }
-        } catch (SQLException sqle) {
-            sqle.printStackTrace();
-        }
-        return contacts;
     }
 
     @Override
@@ -119,22 +95,22 @@ public class ContactDAO implements DAO<Contact> {
     }
 
     @Override
-    public boolean delete(Contact contact) {
-        String sql = "DELETE FROM " + tableName + " WHERE id=?;";
+    public boolean delete(long id) {
+        String sql = "DELETE FROM " + tableName +
+                " WHERE id=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setLong(1, contact.getId());
+            preparedStatement.setLong(1, id);
             return preparedStatement.executeUpdate() == 1;
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
-
         return false;
     }
 
 
     private Contact parseContact(ResultSet resultSet) throws SQLException {
-        Contact contact= new Contact();
+        Contact contact = new Contact();
         contact.setId(
                 resultSet.getLong(1));
         contact.setFirstName(
@@ -163,4 +139,42 @@ public class ContactDAO implements DAO<Contact> {
                 resultSet.getString(12));
         return contact;
     }
+
+    @Override
+    public int getTotalElements() {
+        String sql = "SELECT COUNT(id)" +
+                " FROM " + tableName;
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            return resultSet.getInt(1);
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        }
+        return -1;
+    }
+
+    @Override
+    public List<Contact> getPage(int currentPage, int pageLimit) {
+        List<Contact> contacts = new ArrayList<>();
+        String sql = "SELECT id,first_name,middle_name,last_name,date_of_birth,gender," +
+                "marital_status,citizenship,website,email,current_place_of_work,photo" +
+                " FROM " + tableName +
+                " ORDER BY id ASC LIMIT ? OFFSET ?;";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, pageLimit);
+            preparedStatement.setInt(2, (currentPage - 1) * pageLimit);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    contacts.add(
+                            parseContact(resultSet));
+                }
+            }
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        }
+        return contacts;
+    }
+
 }

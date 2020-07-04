@@ -7,9 +7,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 
-public class AddressDAO implements DAO<Address> {
+public class AddressDAO implements OneSlaveDAO<Address> {
 
     private final DataSource dataSource;
     private final String tableName = "addresses";
@@ -34,7 +33,7 @@ public class AddressDAO implements DAO<Address> {
             preparedStatement.setInt(6, address.getApartmentNumber());
             preparedStatement.setInt(7, address.getPostcode());
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                return resultSet.getLong(1);
+                return resultSet.next() ? resultSet.getLong(1) : -1;
             }
 
         } catch (SQLException sqle) {
@@ -63,13 +62,21 @@ public class AddressDAO implements DAO<Address> {
     }
 
     @Override
-    public List<Address> getAllById(long id) {
-        throw new UnsupportedOperationException();
-    }
+    public Address getByMasterId(long masterId) {
+        String sql = "SELECT id, contact_id, country, city, street, house_number, appartment_number, postcode" +
+                " FROM " + tableName +
+                " WHERE contact_id=?;";
 
-    @Override
-    public List<Address> getAll() {
-        throw new UnsupportedOperationException();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setLong(1, masterId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next() ? parseAddress(resultSet) : null;
+            }
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -98,10 +105,18 @@ public class AddressDAO implements DAO<Address> {
     }
 
     @Override
-    public boolean delete(Address address) {
-        throw new UnsupportedOperationException();
+    public boolean delete(long id) {
+        String sql = "DELETE FROM " + tableName +
+                " WHERE id=?;";
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setLong(1, id);
+            return preparedStatement.executeUpdate() == 1;
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        }
+        return false;
     }
-
 
     private Address parseAddress(ResultSet resultSet) throws SQLException {
         Address address = new Address();

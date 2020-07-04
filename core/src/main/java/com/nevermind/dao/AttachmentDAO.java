@@ -7,7 +7,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AttachmentDAO implements DAO<Attachment> {
+public class AttachmentDAO implements ManySlavesDAO<Attachment> {
 
     private final DataSource dataSource;
     private final String tableName = "attachments";
@@ -30,7 +30,7 @@ public class AttachmentDAO implements DAO<Attachment> {
             preparedStatement.setString(4, attachment.getComment());
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                return resultSet.getLong(1);
+                return resultSet.next() ? resultSet.getLong(1) : -1;
             }
         } catch (SQLException sqle) {
             sqle.printStackTrace();
@@ -57,14 +57,14 @@ public class AttachmentDAO implements DAO<Attachment> {
     }
 
     @Override
-    public List<Attachment> getAllById(long id) {
+    public List<Attachment> getAllByMasterId(long masterId) {
         List<Attachment> attachments = new ArrayList<>();
         String sql = "SELECT id, contact_id, filename, date, comment" +
                 " FROM " + tableName +
-                " WHERE id=?;";
+                " WHERE contact_id=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setLong(1, id);
+            preparedStatement.setLong(1, masterId);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     attachments.add(
@@ -75,11 +75,6 @@ public class AttachmentDAO implements DAO<Attachment> {
             sqle.printStackTrace();
         }
         return attachments;
-    }
-
-    @Override
-    public List<Attachment> getAll() {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -106,19 +101,16 @@ public class AttachmentDAO implements DAO<Attachment> {
     }
 
     @Override
-    public boolean delete(Attachment attachment) {
+    public boolean delete(long id) {
         String sql = "DELETE FROM " + tableName +
                 " WHERE id=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-
-            preparedStatement.setLong(1, attachment.getId());
-
+            preparedStatement.setLong(1, id);
             return preparedStatement.executeUpdate() == 1;
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
-
         return false;
     }
 

@@ -8,7 +8,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PhoneNumberDAO implements DAO<PhoneNumber> {
+public class PhoneNumberDAO implements ManySlavesDAO<PhoneNumber> {
 
     private final DataSource dataSource;
     private final String tableName = "phone_numbers";
@@ -33,7 +33,7 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
             preparedStatement.setString(6, phoneNumber.getComment());
 
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                return resultSet.getLong(1);
+                return resultSet.next() ? resultSet.getLong(1) : -1;
             }
         } catch (SQLException sqle) {
             sqle.printStackTrace();
@@ -60,14 +60,14 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
     }
 
     @Override
-    public List<PhoneNumber> getAllById(long id) {
+    public List<PhoneNumber> getAllByMasterId(long masterId) {
         List<PhoneNumber> phoneNumbers = new ArrayList<>();
         String sql = "SELECT id, contact_id, country_code, operator_code, phone_number, phone_type, comment" +
                 " FROM " + tableName +
-                " WHERE id=?;";
+                " WHERE contact_id=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setLong(1, id);
+            preparedStatement.setLong(1, masterId);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
                     phoneNumbers.add(
@@ -78,11 +78,6 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
             sqle.printStackTrace();
         }
         return phoneNumbers;
-    }
-
-    @Override
-    public List<PhoneNumber> getAll() {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -109,14 +104,12 @@ public class PhoneNumberDAO implements DAO<PhoneNumber> {
     }
 
     @Override
-    public boolean delete(PhoneNumber phoneNumber) {
+    public boolean delete(long id) {
         String sql = "DELETE FROM " + tableName +
                 " WHERE id=?;";
         try (Connection connection = dataSource.getConnection();
-
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.setLong(1, phoneNumber.getId());
-
+            preparedStatement.setLong(1, id);
             return preparedStatement.executeUpdate() == 1;
         } catch (SQLException sqle) {
             sqle.printStackTrace();

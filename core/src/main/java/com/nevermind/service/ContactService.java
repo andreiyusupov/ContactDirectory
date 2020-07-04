@@ -35,7 +35,7 @@ public class ContactService implements PaginationService<Contact> {
     }
 
     @Override
-    public int getRecordsCount() {
+    public int getTotalElements() {
         return ((PaginationDAO<Contact>) contactDAO).getTotalElements();
     }
 

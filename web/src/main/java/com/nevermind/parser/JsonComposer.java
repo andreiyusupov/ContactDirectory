@@ -5,23 +5,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.nevermind.dto.ContactDTO;
-import com.nevermind.dto.ShortContactDTO;
+import com.nevermind.dto.ContactPageDTO;
 
-import java.util.List;
+public class JsonComposer {
 
-public class DTOToJsonParser {
-
-    public static String parseDTOtoJson(ContactDTO contactDTO) throws JsonProcessingException {
+    public static String composeJson(ContactDTO contactDTO) throws JsonProcessingException {
         return new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
                 .writeValueAsString(contactDTO);
     }
 
-    public static String parseDTOtoJson(List<ShortContactDTO> contactDTOs) throws JsonProcessingException {
+    public static String composeJson(ContactPageDTO contactPageDTO) throws JsonProcessingException {
         return new ObjectMapper()
                 .registerModule(new JavaTimeModule())
                 .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                .writeValueAsString(contactDTOs);
+                .writeValueAsString(contactPageDTO);
+
     }
 }

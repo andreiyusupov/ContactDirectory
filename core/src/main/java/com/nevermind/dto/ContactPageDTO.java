@@ -5,7 +5,7 @@ import java.util.List;
 public class ContactPageDTO {
 
     private int currentPage;
-    private int pageSize;
+    private int pageLimit;
     private int totalElements;
     private List<ShortContactDTO> shortContacts;
 
@@ -20,12 +20,12 @@ public class ContactPageDTO {
         this.currentPage = currentPage;
     }
 
-    public int getPageSize() {
-        return pageSize;
+    public int getPageLimit() {
+        return pageLimit;
     }
 
-    public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
+    public void setPageLimit(int pageLimit) {
+        this.pageLimit = pageLimit;
     }
 
     public int getTotalElements() {

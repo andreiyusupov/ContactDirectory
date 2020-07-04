@@ -2,6 +2,7 @@ package com.nevermind.facade;
 
 import com.nevermind.dao.*;
 import com.nevermind.dto.ContactDTO;
+import com.nevermind.dto.ContactPageDTO;
 import com.nevermind.dto.ShortContactDTO;
 import com.nevermind.dto.util.DTOComposer;
 import com.nevermind.dto.util.ModelExtractor;
@@ -62,14 +63,20 @@ public class ContactFacade {
                 ((ManySlavesService<Attachment>) attachmentService).getAllByMasterId(id));
     }
 
-    public List<ShortContactDTO> getPage(int pageNum, int recordsPerPage) {
+    public ContactPageDTO getPage(int currentPage, int pageLimit) {
+        ContactPageDTO contactPageDTO = new ContactPageDTO();
         List<ShortContactDTO> shortContactDTOs = new ArrayList<>();
-        for (Contact contact : ((PaginationService<Contact>) contactService).getPage(pageNum, recordsPerPage)) {
+        int totalElements = ((PaginationService<Contact>) contactService).getTotalElements();
+        for (Contact contact : ((PaginationService<Contact>) contactService).getPage(currentPage, pageLimit)) {
             long id = contact.getId();
             shortContactDTOs.add(DTOComposer.composeShortDTO(contact,
                     ((OneSlaveService<Address>) addressService).getByMasterId(id)));
         }
-        return shortContactDTOs;
+        contactPageDTO.setCurrentPage(currentPage);
+        contactPageDTO.setPageLimit(pageLimit);
+        contactPageDTO.setTotalElements(totalElements);
+        contactPageDTO.setShortContacts(shortContactDTOs);
+        return contactPageDTO;
     }
 
     public boolean update(ContactDTO contactDTO) {
@@ -104,7 +111,7 @@ public class ContactFacade {
         return true;
     }
 
-    public boolean delete(List<Long> ids) {
+    public boolean delete(long[] ids) {
         for (long id : ids) {
             delete(id);
         }

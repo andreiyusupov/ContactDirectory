@@ -147,7 +147,7 @@ public class ContactDAO implements PaginationDAO<Contact> {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
-            return resultSet.getInt(1);
+            return resultSet.next() ? resultSet.getInt(1) : -1;
         } catch (SQLException sqle) {
             sqle.printStackTrace();
         }
@@ -160,7 +160,7 @@ public class ContactDAO implements PaginationDAO<Contact> {
         String sql = "SELECT id,first_name,middle_name,last_name,date_of_birth,gender," +
                 "marital_status,citizenship,website,email,current_place_of_work,photo" +
                 " FROM " + tableName +
-                " ORDER BY id ASC LIMIT ? OFFSET ?;";
+                " ORDER BY id LIMIT ? OFFSET ?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setInt(1, pageLimit);

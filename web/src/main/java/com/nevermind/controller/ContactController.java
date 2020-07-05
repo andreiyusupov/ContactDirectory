@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @WebServlet("/contacts/*")
@@ -22,14 +21,21 @@ public class ContactController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        response.setContentType("text/html");
-        PrintWriter out = response.getWriter();
-        out.print(contactFacade.create(
-                JsonParser.parseJsonToDTO(
-                        request.getReader()
-                                .lines()
-                                .collect(Collectors.joining()))));
-        out.flush();
+        String pathInfo = request.getPathInfo();
+        if (pathInfo == null || pathInfo.equals("/")) {
+            long id = contactFacade.create(
+                    JsonParser.parseJsonToDTO(
+                            request.getReader()
+                                    .lines()
+                                    .collect(Collectors.joining())));
+            if (id > 0) {
+                response.setStatus(201);
+            } else {
+                response.setStatus(500);
+            }
+        } else {
+            response.setStatus(404);
+        }
     }
 
     @Override
@@ -38,6 +44,7 @@ public class ContactController extends HttpServlet {
         String pathInfo = request.getPathInfo();
         if (pathInfo == null || pathInfo.equals("/")) {
             PrintWriter out = response.getWriter();
+            response.setStatus(200);
             if (request.getQueryString() == null) {
                 out.print(
                         JsonComposer.composeJson(
@@ -56,6 +63,7 @@ public class ContactController extends HttpServlet {
             if (splits.length != 2) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             } else {
+                response.setStatus(200);
                 long id = Long.parseLong(splits[1]);
                 PrintWriter out = response.getWriter();
                 out.print(
@@ -83,29 +91,39 @@ public class ContactController extends HttpServlet {
                         .lines()
                         .collect(Collectors.joining()));
                 contactDTO.setId(id);
-                contactFacade.update(contactDTO);
+                if (contactFacade.update(contactDTO)) {
+                    response.setStatus(200);
+                } else {
+                    response.setStatus(404);
+                }
             }
         }
     }
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
         String pathInfo = request.getPathInfo();
-
         if (pathInfo == null || pathInfo.equals("/")) {
-            long[] id = JsonParser.getIdArray(request.getReader()
+            long[] ids = JsonParser.getIdArray(request.getReader()
                     .lines()
                     .collect(Collectors.joining()));
-//TODO:check
-            System.out.println("ids" + Arrays.toString(id));
+            if (contactFacade.delete(ids)) {
+                response.setStatus(200);
+            } else {
+                response.setStatus(404);
+            }
         } else {
             String[] splits = pathInfo.split("/");
             if (splits.length != 2) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST);
             } else {
+                response.setStatus(200);
                 long id = Long.parseLong(splits[1]);
-                contactFacade.delete(id);
+                if (contactFacade.delete(id)) {
+                    response.setStatus(200);
+                } else {
+                    response.setStatus(404);
+                }
             }
         }
     }

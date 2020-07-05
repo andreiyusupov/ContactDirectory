@@ -100,15 +100,18 @@ public class ContactFacade {
     }
 
     public boolean delete(long id) {
-        contactService.delete(id);
-        addressService.delete(((OneSlaveService<Address>) addressService).getByMasterId(id).getId());
-        for (PhoneNumber phoneNumber : ((ManySlavesService<PhoneNumber>) phoneNumberService).getAllByMasterId(id)) {
-            phoneNumberService.delete(phoneNumber.getId());
+        if (contactService.delete(id)) {
+            addressService.delete(((OneSlaveService<Address>) addressService).getByMasterId(id).getId());
+            for (PhoneNumber phoneNumber : ((ManySlavesService<PhoneNumber>) phoneNumberService).getAllByMasterId(id)) {
+                phoneNumberService.delete(phoneNumber.getId());
+            }
+            for (Attachment attachment : ((ManySlavesService<Attachment>) attachmentService).getAllByMasterId(id)) {
+                attachmentService.delete(attachment.getId());
+            }
+            return true;
+        } else {
+            return false;
         }
-        for (Attachment attachment : ((ManySlavesService<Attachment>) attachmentService).getAllByMasterId(id)) {
-            attachmentService.delete(attachment.getId());
-        }
-        return true;
     }
 
     public boolean delete(long[] ids) {

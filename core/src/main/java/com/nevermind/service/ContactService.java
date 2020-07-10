@@ -1,12 +1,14 @@
 package com.nevermind.service;
 
+import com.nevermind.criteria.Criterion;
 import com.nevermind.dao.CoreDAO;
 import com.nevermind.dao.PaginationDAO;
+import com.nevermind.dao.SearchDAO;
 import com.nevermind.model.Contact;
 
 import java.util.List;
 
-public class ContactService implements PaginationService<Contact> {
+public class ContactService implements PaginationService<Contact>, SearchService<Contact, Criterion> {
 
     private final CoreDAO<Contact> contactDAO;
 
@@ -40,7 +42,17 @@ public class ContactService implements PaginationService<Contact> {
     }
 
     @Override
-    public List<Contact> getPage(int pageNum, int recordsPerPage) {
-        return ((PaginationDAO<Contact>) contactDAO).getPage(pageNum, recordsPerPage);
+    public List<Contact> getPage(int currentPage, int pageLimit) {
+        return ((PaginationDAO<Contact>) contactDAO).getPage(currentPage, pageLimit);
+    }
+
+    @Override
+    public int findTotalElements(List<Criterion> criteria) {
+        return ((SearchDAO<Contact, Criterion>) contactDAO).findTotalElements(criteria);
+    }
+
+    @Override
+    public List<Contact> findPage(int pageNum, int recordsPerPage, List<Criterion> criteria) {
+        return ((SearchDAO<Contact, Criterion>) contactDAO).findPage(pageNum, recordsPerPage, criteria);
     }
 }

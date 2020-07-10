@@ -6,5 +6,5 @@ public interface PaginationDAO<T> extends CoreDAO<T> {
 
     int getTotalElements();
 
-    List<T> getPage(int pageNum, int recordsPerPage);
+    List<T> getPage(int currentPage, int pageLimit);
 }

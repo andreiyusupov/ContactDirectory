@@ -2,6 +2,7 @@ package com.nevermind.controller;
 
 import com.nevermind.dto.ContactDTO;
 import com.nevermind.facade.ContactFacade;
+import com.nevermind.parser.CriteriaComposer;
 import com.nevermind.parser.JsonComposer;
 import com.nevermind.parser.JsonParser;
 
@@ -52,9 +53,16 @@ public class ContactController extends HttpServlet {
             } else {
                 int currentPage = Integer.parseInt(request.getParameter("current-page"));
                 int pageLimit = Integer.parseInt(request.getParameter("page-limit"));
-                out.print(
-                        JsonComposer.composeJson(
-                                contactFacade.getPage(currentPage, pageLimit)));
+
+                if (request.getParameterMap().size() > 2) {
+                    out.print(
+                            JsonComposer.composeJson(
+                                    contactFacade.findPage(currentPage, pageLimit, CriteriaComposer.generateCriteriaDTO(request.getParameterMap()))));
+                } else {
+                    out.print(
+                            JsonComposer.composeJson(
+                                    contactFacade.getPage(currentPage, pageLimit)));
+                }
             }
             out.flush();
         } else {

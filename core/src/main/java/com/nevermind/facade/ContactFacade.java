@@ -1,8 +1,10 @@
 package com.nevermind.facade;
 
+import com.nevermind.criteria.Criterion;
 import com.nevermind.dao.*;
 import com.nevermind.dto.ContactDTO;
 import com.nevermind.dto.ContactPageDTO;
+import com.nevermind.dto.CriteriaDTO;
 import com.nevermind.dto.ShortContactDTO;
 import com.nevermind.dto.util.DTOComposer;
 import com.nevermind.dto.util.ModelExtractor;
@@ -121,4 +123,20 @@ public class ContactFacade {
         return true;
     }
 
+    public ContactPageDTO findPage(int currentPage, int pageLimit, CriteriaDTO criteriaDTO) {
+        ContactPageDTO contactPageDTO = new ContactPageDTO();
+        List<ShortContactDTO> shortContactDTOs = new ArrayList<>();
+        List<Criterion> criteria = criteriaDTO.getCriteria();
+        int totalElements = ((SearchService<Contact, Criterion>) contactService).findTotalElements(criteria);
+        for (Contact contact : ((SearchService<Contact, Criterion>) contactService).findPage(currentPage, pageLimit, criteria)) {
+            long id = contact.getId();
+            shortContactDTOs.add(DTOComposer.composeShortDTO(contact,
+                    ((OneSlaveService<Address>) addressService).getByMasterId(id)));
+        }
+        contactPageDTO.setCurrentPage(currentPage);
+        contactPageDTO.setPageLimit(pageLimit);
+        contactPageDTO.setTotalElements(totalElements);
+        contactPageDTO.setShortContacts(shortContactDTOs);
+        return contactPageDTO;
+    }
 }

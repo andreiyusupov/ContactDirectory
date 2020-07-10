@@ -5,5 +5,5 @@ import java.util.List;
 public interface PaginationService<T> extends CoreService<T> {
     int getTotalElements();
 
-    List<T> getPage(int pageNum, int recordsPerPage);
+    List<T> getPage(int currentPage, int pageLimit);
 }

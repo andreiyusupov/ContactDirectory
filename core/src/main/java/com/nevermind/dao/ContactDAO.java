@@ -1,5 +1,7 @@
 package com.nevermind.dao;
 
+import com.nevermind.criteria.Criterion;
+import com.nevermind.criteria.CriterionParser;
 import com.nevermind.model.Contact;
 import com.nevermind.model.Gender;
 import com.nevermind.model.MaritalStatus;
@@ -9,7 +11,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContactDAO implements PaginationDAO<Contact> {
+public class ContactDAO implements PaginationDAO<Contact>, SearchDAO<Contact, Criterion> {
 
     private final DataSource dataSource;
     private final String tableName = "contacts";
@@ -143,7 +145,7 @@ public class ContactDAO implements PaginationDAO<Contact> {
     @Override
     public int getTotalElements() {
         String sql = "SELECT COUNT(id)" +
-                " FROM " + tableName;
+                " FROM " + tableName + ";";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -177,4 +179,100 @@ public class ContactDAO implements PaginationDAO<Contact> {
         return contacts;
     }
 
+    @Override
+    public int findTotalElements(List<Criterion> criteria) {
+        List<String[]> criterionList = CriterionParser.parseCriterion(criteria);
+        boolean addressCriterion = false;
+        for (String[] crit : criterionList) {
+            if (crit[0].equals("addresses")) {
+                addressCriterion = true;
+                break;
+            }
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("SELECT COUNT(contacts.id)" +
+                " FROM " + tableName);
+        if (addressCriterion) {
+            stringBuilder.append(" INNER JOIN addresses");
+            stringBuilder.append(" ON contacts.id=addresses.contact_id");
+        }
+        boolean isFirst = true;
+        for (String[] crit : criterionList) {
+            if (isFirst) {
+                stringBuilder.append(" WHERE ");
+                isFirst = false;
+            } else {
+                stringBuilder.append(" AND ");
+            }
+            stringBuilder.append(crit[0])
+                    .append(".")
+                    .append(crit[1])
+                    .append(crit[2])
+                    .append(crit[3]);
+        }
+        stringBuilder.append(";");
+        String sql = stringBuilder.toString();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+            return resultSet.next() ? resultSet.getInt(1) : -1;
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        }
+        return -1;
+    }
+
+    @Override
+    public List<Contact> findPage(int currentPage, int pageLimit, List<Criterion> criteria) {
+        List<Contact> contacts = new ArrayList<>();
+        List<String[]> criterionList = CriterionParser.parseCriterion(criteria);
+        boolean addressCriterion = false;
+        for (String[] crit : criterionList) {
+            if (crit[0].equals("addresses")) {
+                addressCriterion = true;
+                break;
+            }
+        }
+
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("SELECT contacts.id,contacts.first_name,contacts.middle_name,contacts.last_name,contacts.date_of_birth,contacts.gender," +
+                "contacts.marital_status,contacts.citizenship,contacts.website,contacts.email,contacts.current_place_of_work,contacts.photo" +
+                " FROM " + tableName);
+
+        if (addressCriterion) {
+            stringBuilder.append(" INNER JOIN addresses");
+            stringBuilder.append(" ON contacts.id=addresses.contact_id");
+        }
+        boolean isFirst = true;
+        for (String[] crit : criterionList) {
+            if (isFirst) {
+                stringBuilder.append(" WHERE ");
+                isFirst = false;
+            } else {
+                stringBuilder.append(" AND ");
+            }
+            stringBuilder.append(crit[0])
+                    .append(".")
+                    .append(crit[1])
+                    .append(crit[2])
+                    .append(crit[3]);
+        }
+        stringBuilder.append(" ORDER BY contacts.id LIMIT ? OFFSET ?;");
+        String sql = stringBuilder.toString();
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setInt(1, pageLimit);
+            preparedStatement.setInt(2, (currentPage - 1) * pageLimit);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    contacts.add(
+                            parseContact(resultSet));
+                }
+            }
+        } catch (SQLException sqle) {
+            sqle.printStackTrace();
+        }
+        return contacts;
+    }
 }

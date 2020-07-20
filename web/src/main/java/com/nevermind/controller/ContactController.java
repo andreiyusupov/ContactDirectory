@@ -6,19 +6,36 @@ import com.nevermind.parser.CriteriaComposer;
 import com.nevermind.parser.JsonComposer;
 import com.nevermind.parser.JsonParser;
 
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 @WebServlet("/contacts/*")
 public class ContactController extends HttpServlet {
 
-    private final ContactFacade contactFacade = new ContactFacade();
-    private final int pageLimit = 20;
+    private ContactFacade contactFacade;
+    private int pageLimit;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+		contactFacade = new ContactFacade();
+		Properties properties = new Properties();
+		try (InputStream inputStream = ContactController.class.getClassLoader().getResourceAsStream("application.properties")) {
+			properties.load(inputStream);
+			pageLimit = Integer.parseInt(properties.getProperty("pageLimit"));
+			System.out.println(pageLimit);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {

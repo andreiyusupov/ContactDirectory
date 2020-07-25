@@ -17,7 +17,7 @@ import java.io.PrintWriter;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-@WebServlet("/contacts/*")
+@WebServlet("/api/contacts/*")
 public class ContactController extends HttpServlet {
 
     private ContactFacade contactFacade;

@@ -31,7 +31,6 @@ public class ContactController extends HttpServlet {
 		try (InputStream inputStream = ContactController.class.getClassLoader().getResourceAsStream("application.properties")) {
 			properties.load(inputStream);
 			pageLimit = Integer.parseInt(properties.getProperty("pageLimit"));
-			System.out.println(pageLimit);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -152,4 +151,5 @@ public class ContactController extends HttpServlet {
             }
         }
     }
+
 }

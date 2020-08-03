@@ -19,7 +19,7 @@ public class AddressDAO implements OneSlaveDAO<Address> {
 
     @Override
     public long create(Address address) {
-        String sql = "INSERT INTO " + tableName + "(contact_id, country, city, street, house_number, appartment_number, postcode)" +
+        String sql = "INSERT INTO " + tableName + "(contact_id, country, city, street, house_number, apartment_number, postcode)" +
                 " VALUES(?,?,?,?,?,?,?)" +
                 " RETURNING id;";
         try (Connection connection = dataSource.getConnection();
@@ -45,7 +45,7 @@ public class AddressDAO implements OneSlaveDAO<Address> {
 
     @Override
     public Address get(long id) {
-        String sql = "SELECT id, contact_id, country, city, street, house_number, appartment_number, postcode" +
+        String sql = "SELECT id, contact_id, country, city, street, house_number, apartment_number, postcode" +
                 " FROM " + tableName +
                 " WHERE id=?;";
 
@@ -63,7 +63,7 @@ public class AddressDAO implements OneSlaveDAO<Address> {
 
     @Override
     public Address getByMasterId(long masterId) {
-        String sql = "SELECT id, contact_id, country, city, street, house_number, appartment_number, postcode" +
+        String sql = "SELECT id, contact_id, country, city, street, house_number, apartment_number, postcode" +
                 " FROM " + tableName +
                 " WHERE contact_id=?;";
 
@@ -83,7 +83,7 @@ public class AddressDAO implements OneSlaveDAO<Address> {
     public boolean update(Address address) {
 
         String sql = "UPDATE " + tableName +
-                " SET(contact_id, country, city, street, house_number, appartment_number, postcode) =(?,?,?,?,?,?,?)" +
+                " SET(contact_id, country, city, street, house_number, apartment_number, postcode) =(?,?,?,?,?,?,?)" +
                 " WHERE id=?;";
         try (Connection connection = dataSource.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql)) {

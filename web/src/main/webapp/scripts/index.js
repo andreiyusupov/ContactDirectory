@@ -1,18 +1,10 @@
 import Router from "./Router.js";
-import {home} from "./script.js";
+import {navigateMain} from "./script.js";
+// import {navigateCreateContact} from "./script.js";
+// import {navigateEditContact} from "./script.js";
 
-const router = new Router({
-    mode: 'hash',
-    root: '/'
-});
+const router = new Router();
 
-router
-    .add(/create/, () => {
-        alert('CREATE');
-    })
-    .add(/edit\/(.*)/, (id) => {
-        alert(`edit id: ${id}`);
-    })
-    .add('', () => {
-        home()
-    });
+router.add('/', () => {navigateMain()})
+// .add('/create', () => {navigateCreateContact()})
+//     .add('/edit', () => {navigateEditContact()});

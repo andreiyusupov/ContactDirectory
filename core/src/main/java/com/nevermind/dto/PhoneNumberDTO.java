@@ -1,7 +1,8 @@
-package com.nevermind.model;
+package com.nevermind.dto;
 
+import com.nevermind.model.PhoneType;
 
-public class PhoneNumber {
+public class PhoneNumberDTO {
 
     private long id;
     private long contactId;
@@ -10,9 +11,6 @@ public class PhoneNumber {
     private long phoneNumber;
     private PhoneType phoneType;
     private String comment;
-
-    public PhoneNumber() {
-    }
 
     public long getId() {
         return id;

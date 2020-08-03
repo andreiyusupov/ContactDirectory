@@ -1,17 +1,16 @@
-package com.nevermind.model;
+package com.nevermind.dto;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.time.LocalDate;
 
-public class Attachment {
-
+public class AttachmentDTO {
     private long id;
     private long contactId;
     private String fileName;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate date;
     private String comment;
-
-    public Attachment() {
-    }
 
     public long getId() {
         return id;

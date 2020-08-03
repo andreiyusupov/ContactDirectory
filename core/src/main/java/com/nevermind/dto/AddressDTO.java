@@ -1,7 +1,6 @@
-package com.nevermind.model;
+package com.nevermind.dto;
 
-public class Address {
-
+public class AddressDTO {
     private long id;
     private long contactId;
     private String country;
@@ -10,11 +9,6 @@ public class Address {
     private int houseNumber;
     private int apartmentNumber;
     private int postcode;
-
-    public Address() {
-
-    }
-
 
     public long getId() {
         return id;
